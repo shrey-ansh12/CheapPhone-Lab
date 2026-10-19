@@ -1,0 +1,50 @@
+[
+  {
+    "id": "budget_1",
+    "name": "BharatPhone Lite (2GB / Android 10 Go)",
+    "android_version": "Android 10 (Go Edition, API 29)",
+    "ram_category": "2GB RAM (Aggressive LMK)",
+    "storage": "16GB eMMC (Only 450MB available)",
+    "screen": "720 x 1520 (HD+, 270 ppi)",
+    "network_config": "Dual SIM 4G/2G, High packet drops in transit",
+    "battery_saver": "Enabled (Heavy background CPU throttle)",
+    "is_demo_profile": true,
+    "description": "Typical sub-₹7,000 device with ultra-low memory margin, aggressive Low Memory Killer (LMK), and slow flash memory IO."
+  },
+  {
+    "id": "budget_2",
+    "name": "DesiMobile Prime (3GB / Android 11)",
+    "android_version": "Android 11 (API 30)",
+    "ram_category": "3GB LPDDR3",
+    "storage": "32GB (1.2GB available, fragmented)",
+    "screen": "720 x 1600 (20:9 ratio)",
+    "network_config": "4G VoLTE, prone to cell tower handover drops",
+    "battery_saver": "Standard adaptive battery",
+    "is_demo_profile": true,
+    "description": "Mass-market Tier-2/3 city device. Suffers from erratic network drops during commute and storage cache full states."
+  },
+  {
+    "id": "budget_3",
+    "name": "GraminTab Go (1GB / Android 9 Go)",
+    "android_version": "Android 9 Pie (Go Edition, API 28)",
+    "ram_category": "1GB RAM (Extreme memory pressure)",
+    "storage": "8GB Internal (150MB free)",
+    "screen": "600 x 1024 (Low density)",
+    "network_config": "3G / Edge intermittent connection",
+    "battery_saver": "Extreme Battery Saver always active",
+    "is_demo_profile": true,
+    "description": "Field worker / rural kiosk tablet. Extremely constrained storage & RAM; crashes when loading media or complex WebViews."
+  },
+  {
+    "id": "midrange_ref",
+    "name": "Reference Device (6GB / Android 13)",
+    "android_version": "Android 13 (API 33)",
+    "ram_category": "6GB LPDDR4X",
+    "storage": "128GB UFS 2.2 (45GB available)",
+    "screen": "1080 x 2400 (FHD+, 90Hz)",
+    "network_config": "Stable 4G / 5G / Broadband Wi-Fi",
+    "battery_saver": "Disabled",
+    "is_demo_profile": true,
+    "description": "Standard developer phone used during typical debugging; masks memory leaks and network timeout issues present on budget devices."
+  }
+]

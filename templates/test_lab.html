@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Test Lab{% endblock %}
+{% block page_title %}Test Lab — Configure Mobile Stress Run{% endblock %}
+{% block page_subtitle %}Simulate Indian mobile conditions or execute controlled real Android emulator testing{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Mode Selection Tabs -->
+  <div class="col-12 mb-3">
+    <ul class="nav nav-pills" id="testModeTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active px-4 py-2" id="sim-tab" data-bs-toggle="pill" data-bs-target="#sim-pane" type="button" role="tab">
+          <i data-lucide="cpu" class="me-2" style="width: 16px; height: 16px;"></i> Mode A: Demo Simulation (Instant, No Device Needed)
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 py-2" id="real-tab" data-bs-toggle="pill" data-bs-target="#real-pane" type="button" role="tab">
+          <i data-lucide="smartphone" class="me-2" style="width: 16px; height: 16px;"></i> Mode B: Real Emulator / ADB Test
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Tab Contents -->
+  <div class="tab-content col-12" id="testModeTabContent">
+    
+    <!-- PANE A: SIMULATION MODE -->
+    <div class="tab-pane fade show active" id="sim-pane" role="tabpanel">
+      <div class="lab-card">
+        <div class="alert alert-dark-info d-flex align-items-center mb-4">
+          <i data-lucide="info" class="me-3" style="width: 24px; height: 24px; flex-shrink: 0;"></i>
+          <div>
+            <strong>Deterministic Simulation Engine:</strong> Executes realistic rule-based stress models targeting Indian telecom (2G/3G/4G commute drops) and budget handset memory margins (< 2GB RAM). All results are clearly labelled as simulated.
+          </div>
+        </div>
+
+        <form action="{{ url_for('start_simulation') }}" method="POST" id="simForm">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Application Name *</label>
+              <input type="text" name="app_name" class="form-control" value="KisanBazaar Grocery App" required placeholder="e.g. KisanBazaar, SwiggyLite, FinPay">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Test Run Description</label>
+              <input type="text" name="description" class="form-control" value="Checkout & Image Catalog Stress under 2G network" placeholder="Brief note on test purpose">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Target Device Profile *</label>
+              <select name="profile_id" class="form-select">
+                {% for p in profiles %}
+                <option value="{{ p.id }}">{{ p.name }} — {{ p.ram_category }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text text-muted" style="font-size: 0.72rem;">Select typical Indian sub-₹7,000 budget hardware profile.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Network Condition Preset *</label>
+              <select name="network_condition" class="form-select">
+                <option value="Normal connection">Normal connection (4G/Wi-Fi stable)</option>
+                <option value="Slow connection" selected>Slow connection (128kbps / 2G EDGE emulation)</option>
+                <option value="High latency">High latency (RTT > 1500ms, packet jitter)</option>
+                <option value="Intermittent connectivity">Intermittent connectivity (30% dropped packets during transit)</option>
+                <option value="Temporary disconnection">Temporary disconnection (Tunnel / elevator zero-connectivity)</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Available Storage Level</label>
+              <select name="storage_level" class="form-select">
+                <option value="Adequate (Over 2GB)">Adequate (Over 2GB free)</option>
+                <option value="Low (Under 500MB)" selected>Low (Under 500MB free)</option>
+                <option value="Critical (Under 100MB)">Critical (Under 100MB free)</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Memory Pressure Level</label>
+              <select name="memory_pressure" class="form-select">
+                <option value="Normal">Normal (Background apps dormant)</option>
+                <option value="High" selected>High (WhatsApp + YouTube running in background)</option>
+                <option value="Extreme">Extreme (Aggressive LMK threshold active)</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Battery Saver State</label>
+              <select name="battery_saver" class="form-select">
+                <option value="Disabled">Disabled</option>
+                <option value="Enabled" selected>Enabled (CPU throttled to 800MHz little cores)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Background Process Interruption</label>
+              <select name="background_interruption" class="form-select">
+                <option value="None">None (App remains in foreground)</option>
+                <option value="Incoming Call" selected>Incoming Phone Call (Activity pushed to background)</option>
+                <option value="Aggressive (Low RAM Kill)">Aggressive Process Kill by OS</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Number of Test Iterations</label>
+              <input type="number" name="iterations" class="form-control" value="3" min="1" max="10">
+            </div>
+
+            <div class="col-12 mt-4 pt-2 border-top border-secondary">
+              <button type="submit" class="btn btn-primary-gradient px-4 py-2 d-flex align-items-center gap-2">
+                <i data-lucide="play" style="width: 18px; height: 18px;"></i>
+                <span>Execute Simulation Run</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- PANE B: REAL EMULATOR / ADB MODE -->
+    <div class="tab-pane fade" id="real-pane" role="tabpanel">
+      <div class="lab-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 text-light"><i data-lucide="terminal" class="me-2 text-cyan"></i>ADB Diagnostics & Device Detection</h5>
+          <span class="badge {% if adb_installed %}bg-success{% else %}bg-warning text-dark{% endif %}">
+            {% if adb_installed %}ADB Installed ({{ adb_version }}){% else %}ADB Not Detected{% endif %}
+          </span>
+        </div>
+
+        {% if not adb_installed %}
+        <div class="alert alert-warning mb-4">
+          <h6 class="alert-heading fw-bold"><i data-lucide="alert-circle" class="me-2" style="width: 18px; height: 18px;"></i>How to configure ADB on this system:</h6>
+          <p class="mb-2" style="font-size: 0.85rem;">Android Debug Bridge (ADB) was not found in your system's PATH. To test on real devices or Android Studio emulators:</p>
+          <ol class="mb-2" style="font-size: 0.82rem;">
+            <li>Install Android Studio or download the standalone <a href="https://developer.android.com/tools/releases/platform-tools" target="_blank" class="text-primary fw-bold">Android SDK Platform-Tools</a>.</li>
+            <li>Add the <code>platform-tools</code> folder to your system environment <code>PATH</code>.</li>
+            <li>Start an emulator via Android Studio Device Manager, or connect an Android phone with USB Debugging enabled.</li>
+          </ol>
+          <p class="m-0 text-muted" style="font-size: 0.8rem;"><em>Note: You can use <strong>Mode A: Demo Simulation</strong> above at any time without installing Android Studio or ADB.</em></p>
+        </div>
+        {% else %}
+        
+        <div class="mb-4">
+          <label class="form-label">Connected Android Devices / Emulators</label>
+          <div class="table-responsive">
+            <table class="table table-dark-custom">
+              <thead>
+                <tr>
+                  <th>Device Serial</th>
+                  <th>State</th>
+                  <th>Type</th>
+                  <th>Hardware / Build</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for dev in connected_devices %}
+                <tr>
+                  <td><code>{{ dev.serial }}</code></td>
+                  <td><span class="badge bg-success">{{ dev.state }}</span></td>
+                  <td>{% if dev.is_emulator %}Emulator{% else %}Physical Device{% endif %}</td>
+                  <td>{{ dev.details }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="4" class="text-center text-muted py-3">No active devices or running emulators detected. Please launch an emulator via Android Studio.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {% if connected_devices %}
+        <form action="{{ url_for('start_real_test') }}" method="POST" enctype="multipart/form-data">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Application Name *</label>
+              <input type="text" name="app_name" class="form-control" required placeholder="e.g. TestPay APK">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Target ADB Device *</label>
+              <select name="device_serial" class="form-select" required>
+                {% for dev in connected_devices %}
+                <option value="{{ dev.serial }}">{{ dev.serial }} ({{ dev.details }})</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">Upload APK File (Optional - Controlled installation only)</label>
+              <input type="file" name="apk_file" class="form-control" accept=".apk">
+              <div class="form-text text-muted" style="font-size: 0.75rem;">Security: APK is never executed on server host. It is only transferred to the selected Android emulator.</div>
+            </div>
+
+            <div class="col-12 mt-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="realConfirm" required>
+                <label class="form-check-label text-warning" for="realConfirm" style="font-size: 0.85rem;">
+                  I explicitly confirm starting a controlled ADB test on the selected Android device.
+                </label>
+              </div>
+            </div>
+
+            <div class="col-12 mt-3 pt-2 border-top border-secondary">
+              <button type="submit" class="btn btn-success px-4 py-2">
+                <i data-lucide="play" class="me-2" style="width: 16px; height: 16px;"></i> Start Real Emulator Run
+              </button>
+            </div>
+          </div>
+        </form>
+        {% endif %}
+
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

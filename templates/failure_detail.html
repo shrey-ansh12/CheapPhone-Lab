@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Failure Details{% endblock %}
+{% block page_title %}Failure: <code>{{ failure.id }}</code>{% endblock %}
+{% block page_subtitle %}{{ failure.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('failure_explorer') }}" class="btn btn-sm btn-outline-secondary">
+    <i data-lucide="arrow-left" class="me-1" style="width: 14px; height: 14px;"></i> Back to Explorer
+  </a>
+</div>
+
+<div class="lab-card mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <span class="badge badge-{{ failure.severity|lower }} me-2">{{ failure.severity }}</span>
+      <span class="badge bg-secondary me-2">{{ failure.category }}</span>
+      <span class="badge {% if failure.mode == 'simulation' %}badge-simulation{% else %}badge-real{% endif %}">{{ failure.mode }}</span>
+    </div>
+    <a href="{{ url_for('graph_explorer_query', failure_id=failure.id) }}" class="btn btn-sm btn-outline-cyan">
+      <i data-lucide="share-2" class="me-1" style="width: 14px; height: 14px;"></i> Graph View
+    </a>
+  </div>
+
+  <p class="fs-6 text-light">{{ failure.description }}</p>
+
+  <div class="row g-3 my-2">
+    <div class="col-md-6">
+      <div class="p-3 bg-dark rounded border border-secondary">
+        <strong class="text-muted d-block mb-1" style="font-size: 0.75rem;">EXPECTED BEHAVIOR</strong>
+        <span class="text-success">{{ failure.expected_behavior }}</span>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="p-3 bg-dark rounded border border-secondary">
+        <strong class="text-muted d-block mb-1" style="font-size: 0.75rem;">OBSERVED BEHAVIOR</strong>
+        <span class="text-danger">{{ failure.observed_behavior }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-3 bg-dark rounded border border-info my-3">
+    <strong class="text-info d-block mb-1" style="font-size: 0.75rem;">SUGGESTED DEBUGGING DIRECTION</strong>
+    <span class="text-light">{{ failure.suggested_debugging }}</span>
+  </div>
+
+  <!-- Reproduction Recipe -->
+  <div class="p-3 rounded mb-3" style="background-color: #0b1120; border: 1px solid #1f2b45;">
+    <h5 class="text-cyan mb-3"><i data-lucide="clipboard-list" class="me-1"></i> Exact Reproduction Recipe</h5>
+    <div class="row g-2 mb-3 text-muted" style="font-size: 0.85rem;">
+      <div class="col-md-6"><strong>Preconditions:</strong> {{ failure.reproduction_recipe.preconditions }}</div>
+      <div class="col-md-6"><strong>Network & Storage:</strong> {{ failure.reproduction_recipe.network_storage }}</div>
+    </div>
+    <h6 class="text-light">Steps to Reproduce:</h6>
+    <ol class="text-light ps-3">
+      {% for step in failure.reproduction_recipe.steps %}
+      <li class="mb-1">{{ step }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+
+  <!-- Evidence -->
+  <div>
+    <h5 class="text-light mb-3"><i data-lucide="file-code" class="me-1"></i> Captured Evidence & Log Traces</h5>
+    {% for ev in failure.evidence %}
+    <div class="mb-3">
+      <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.75rem;">
+        <span>{{ ev.type }}</span>
+        <span>{{ ev.timestamp }}</span>
+      </div>
+      <div class="log-box">{{ ev.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

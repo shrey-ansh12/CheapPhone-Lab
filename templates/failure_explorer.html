@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Failure Explorer{% endblock %}
+{% block page_title %}Failure Explorer & Diagnostics{% endblock %}
+{% block page_subtitle %}Filter, inspect, and analyze failures across categories, severity, and device stress profiles{% endblock %}
+
+{% block content %}
+<!-- Filter Controls -->
+<div class="lab-card mb-4">
+  <form method="GET" action="{{ url_for('failure_explorer') }}" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Category</label>
+      <select name="category" class="form-select" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Severity</label>
+      <select name="severity" class="form-select" onchange="this.form.submit()">
+        <option value="">All Severities</option>
+        <option value="Critical" {% if selected_severity == 'Critical' %}selected{% endif %}>Critical</option>
+        <option value="High" {% if selected_severity == 'High' %}selected{% endif %}>High</option>
+        <option value="Medium" {% if selected_severity == 'Medium' %}selected{% endif %}>Medium</option>
+        <option value="Low" {% if selected_severity == 'Low' %}selected{% endif %}>Low</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label">Execution Mode</label>
+      <select name="mode" class="form-select" onchange="this.form.submit()">
+        <option value="">All Modes</option>
+        <option value="simulation" {% if selected_mode == 'simulation' %}selected{% endif %}>Demo Simulation</option>
+        <option value="real" {% if selected_mode == 'real' %}selected{% endif %}>Real Emulator Test</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <a href="{{ url_for('failure_explorer') }}" class="btn btn-outline-secondary w-100">Reset Filters</a>
+    </div>
+  </form>
+</div>
+
+<!-- Failure Grid / List -->
+<div class="row g-3">
+  {% for f in failures %}
+  <div class="col-12">
+    <div class="lab-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <span class="badge badge-{{ f.severity|lower }} me-2">{{ f.severity }}</span>
+          <span class="badge bg-secondary me-2">{{ f.category }}</span>
+          <span class="badge {% if f.mode == 'simulation' %}badge-simulation{% else %}badge-real{% endif %} me-2">{{ f.mode }}</span>
+          <span class="fw-bold fs-6 text-light">{{ f.title }}</span>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('graph_explorer_query', failure_id=f.id) }}" class="btn btn-sm btn-outline-info py-0" style="font-size: 0.75rem;">
+            <i data-lucide="share-2" class="me-1" style="width: 12px; height: 12px;"></i> View in Neo4j
+          </a>
+          <a href="{{ url_for('failure_detail', failure_id=f.id) }}" class="btn btn-sm btn-primary-gradient py-0" style="font-size: 0.75rem;">
+            Recipe & Evidence
+          </a>
+        </div>
+      </div>
+
+      <p class="text-muted mb-2" style="font-size: 0.85rem;">{{ f.description }}</p>
+
+      <div class="d-flex flex-wrap gap-3 text-muted pt-2 border-top border-secondary" style="font-size: 0.75rem;">
+        <div><strong>Affected Feature:</strong> <span class="text-info">{{ f.feature.name }}</span></div>
+        <div><strong>Test Run:</strong> <code>{{ f.test_run_id }}</code></div>
+        <div><strong>Confidence:</strong> {{ f.confidence }}</div>
+        <div><strong>Hardware Profile:</strong> {{ f.device_profile.name }}</div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="lab-card text-center py-5 text-muted">
+      <p class="m-0">No failures match the selected filter criteria.</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

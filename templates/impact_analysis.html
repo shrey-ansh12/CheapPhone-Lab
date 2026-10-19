@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Impact Analysis{% endblock %}
+{% block page_title %}Impact Analysis & Prioritization{% endblock %}
+{% block page_subtitle %}Data-driven failure triage calibrated for Indian smartphone demographics and network realities{% endblock %}
+
+{% block content %}
+<!-- Assumptions Config Card -->
+<div class="lab-card mb-4">
+  <div class="card-title">
+    <span>Configurable Demographic Assumptions</span>
+    <span class="badge bg-secondary" style="font-size: 0.72rem;">Illustrative Target Baseline</span>
+  </div>
+  <p class="text-muted" style="font-size: 0.82rem;">
+    Calculate failure reach using: <code>Estimated Affected Users = Target Population × Condition Prevalence × Failure Probability</code>.
+    Adjust parameters below to evaluate impact on your specific user demographic.
+  </p>
+
+  <form method="POST" action="{{ url_for('impact_analysis') }}" class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Target User Population (MAU)</label>
+      <input type="number" name="population" class="form-control" value="{{ assumptions.target_user_population }}" step="500000" min="100000">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">&le; 2GB RAM Prevalence (%)</label>
+      <input type="number" name="ram_prev" class="form-control" value="{{ assumptions.prevalence['2GB_or_less_ram'] * 100 }}" step="1" min="1" max="100">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Intermittent 2G/4G Network (%)</label>
+      <input type="number" name="net_prev" class="form-control" value="{{ assumptions.prevalence['slow_intermittent_network'] * 100 }}" step="1" min="1" max="100">
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-primary-gradient w-100">Recalculate Priorities</button>
+    </div>
+  </form>
+</div>
+
+<!-- Methodology Explanation Alert -->
+<div class="alert alert-dark-info mb-4">
+  <div class="d-flex">
+    <i data-lucide="info" class="me-3" style="width: 20px; height: 20px; flex-shrink: 0;"></i>
+    <div style="font-size: 0.82rem;">
+      <strong>Prioritization Scoring Methodology:</strong> Priority Score (0-100) is normalized using:
+      <code>Score = (Severity × 40%) + (Reach Factor × 30%) + (Reproducibility × 20%) + (Confidence × 10%)</code>.
+      Scores &ge; 80 require immediate hotfix release blocking. Numbers displayed are calibrated assumptions for Tier-2/3 Indian markets.
+    </div>
+  </div>
+</div>
+
+<!-- Ranked Impact Table -->
+<div class="lab-card">
+  <div class="card-title">
+    <span>Ranked Failure Backlog (By Priority Score)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark-custom">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Failure Title</th>
+          <th>Condition / Segment</th>
+          <th>Est. Affected Users</th>
+          <th>Severity</th>
+          <th>Priority Score</th>
+          <th>Action Recommendation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in ranked_failures %}
+        <tr>
+          <td class="fw-bold fs-6 text-info">#{{ item.rank }}</td>
+          <td>
+            <div class="fw-bold text-light">{{ item.title }}</div>
+            <div class="text-muted" style="font-size: 0.72rem;">{{ item.formula_explanation }}</div>
+          </td>
+          <td>
+            <span class="badge bg-secondary">{{ item.condition_name }}</span>
+            <div class="text-muted" style="font-size: 0.72rem;">{{ item.prevalence_rate }}% segment prevalence</div>
+          </td>
+          <td class="fw-bold text-warning">{{ "{:,}".format(item.estimated_affected_users) }}</td>
+          <td><span class="badge badge-{{ item.severity|lower }}">{{ item.severity }}</span></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="fw-bold fs-6 text-light">{{ item.priority_score }}</span>
+              <div class="progress flex-grow-1" style="height: 6px; background-color: #212e4a;">
+                <div class="progress-bar {% if item.priority_score >= 80 %}bg-danger{% elif item.priority_score >= 60 %}bg-warning{% else %}bg-info{% endif %}" 
+                     role="progressbar" style="width: {{ item.priority_score }}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-{{ item.action_badge }} text-uppercase" style="font-size: 0.7rem;">{{ item.recommended_action }}</span>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">No failures discovered yet. Execute a run in the Test Lab to generate impact analysis.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

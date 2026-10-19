@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Run {{ run.id }}{% endblock %}
+{% block page_title %}Test Run Details: <code>{{ run.id }}</code>{% endblock %}
+{% block page_subtitle %}Comprehensive execution log, environmental conditions, and reproduction recipes{% endblock %}
+
+{% block content %}
+<!-- Action Buttons Bar -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <a href="{{ url_for('test_runs') }}" class="btn btn-sm btn-outline-secondary">
+    <i data-lucide="arrow-left" class="me-1" style="width: 14px; height: 14px;"></i> Back to Runs
+  </a>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('export_report', run_id=run.id, fmt='markdown') }}" class="btn btn-sm btn-outline-info">
+      <i data-lucide="download" class="me-1" style="width: 14px; height: 14px;"></i> Export Markdown
+    </a>
+    <a href="{{ url_for('export_report', run_id=run.id, fmt='json') }}" class="btn btn-sm btn-outline-secondary">
+      <i data-lucide="file-code" class="me-1" style="width: 14px; height: 14px;"></i> Export JSON
+    </a>
+  </div>
+</div>
+
+<!-- Run Metadata Card -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="lab-card">
+      <div class="card-title">Run Overview</div>
+      <div class="row g-2" style="font-size: 0.88rem;">
+        <div class="col-sm-4 text-muted">Application:</div>
+        <div class="col-sm-8 fw-bold text-light">{{ run.app_name }}</div>
+
+        <div class="col-sm-4 text-muted">Status:</div>
+        <div class="col-sm-8">
+          <span class="badge {% if run.status == 'Passed' %}bg-success{% else %}bg-danger{% endif %}">{{ run.status }}</span>
+          <span class="badge {% if run.is_simulation %}badge-simulation{% else %}badge-real{% endif %} ms-2">{{ run.mode }}</span>
+        </div>
+
+        <div class="col-sm-4 text-muted">Description:</div>
+        <div class="col-sm-8 text-light">{{ run.description }}</div>
+
+        <div class="col-sm-4 text-muted">Executed At:</div>
+        <div class="col-sm-8 text-light">{{ run.timestamp }}</div>
+
+        <div class="col-sm-4 text-muted">Iterations:</div>
+        <div class="col-sm-8 text-light">{{ run.iterations }} cycle(s)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="lab-card">
+      <div class="card-title">Device & Hardware Spec</div>
+      <div style="font-size: 0.84rem;">
+        <div class="mb-1"><strong>Profile:</strong> {{ run.device_profile.name }}</div>
+        <div class="mb-1 text-muted">Android: {{ run.device_profile.android_version }}</div>
+        <div class="mb-1 text-muted">Memory: {{ run.device_profile.ram_category }}</div>
+        <div class="mb-1 text-muted">Storage: {{ run.device_profile.storage }}</div>
+        <div class="text-muted">Display: {{ run.device_profile.screen }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Environmental Conditions Summary -->
+<div class="lab-card mb-4">
+  <div class="card-title">Configured Mobile Stress Factors</div>
+  <div class="row g-3">
+    {% for k, v in run.conditions_summary.items() %}
+    <div class="col-md-3">
+      <div class="p-2 border border-secondary rounded" style="background: #0d1527;">
+        <div class="text-muted" style="font-size: 0.72rem; text-transform: uppercase;">{{ k.replace('_', ' ') }}</div>
+        <div class="text-info fw-medium" style="font-size: 0.85rem;">{{ v }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Failures and Reproduction Recipes -->
+<h4 class="text-light mb-3">Discovered Failures ({{ run.failure_count }})</h4>
+
+{% for f in run.failures %}
+<div class="lab-card mb-4">
+  <div class="d-flex justify-content-between align-items-start mb-2">
+    <div>
+      <span class="badge badge-{{ f.severity|lower }} me-2">{{ f.severity }}</span>
+      <span class="badge bg-secondary me-2">{{ f.category }}</span>
+      <strong class="text-light fs-5">{{ f.title }}</strong>
+    </div>
+    <div>
+      <a href="{{ url_for('graph_explorer_query', failure_id=f.id) }}" class="btn btn-sm btn-outline-cyan">
+        <i data-lucide="share-2" class="me-1" style="width: 14px; height: 14px;"></i> Neo4j Subgraph
+      </a>
+    </div>
+  </div>
+
+  <p class="text-muted mb-3" style="font-size: 0.88rem;">{{ f.description }}</p>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="p-2 bg-dark rounded border border-secondary">
+        <div class="text-muted" style="font-size: 0.75rem;">EXPECTED BEHAVIOR</div>
+        <div class="text-success" style="font-size: 0.85rem;">{{ f.expected_behavior }}</div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="p-2 bg-dark rounded border border-secondary">
+        <div class="text-muted" style="font-size: 0.75rem;">OBSERVED BEHAVIOR</div>
+        <div class="text-danger" style="font-size: 0.85rem;">{{ f.observed_behavior }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reproduction Recipe Card -->
+  <div class="p-3 rounded mb-3" style="background-color: #0b1120; border: 1px solid #1f2b45;">
+    <h6 class="text-info mb-2"><i data-lucide="clipboard-list" class="me-1" style="width: 16px; height: 16px;"></i> Reproduction Recipe</h6>
+    <div class="row g-2 mb-2" style="font-size: 0.8rem;">
+      <div class="col-md-6 text-muted"><strong>Preconditions:</strong> {{ f.reproduction_recipe.preconditions }}</div>
+      <div class="col-md-6 text-muted"><strong>Network/Storage:</strong> {{ f.reproduction_recipe.network_storage }}</div>
+    </div>
+    <div class="fw-bold text-light mb-1" style="font-size: 0.8rem;">Step-by-Step Instructions:</div>
+    <ol class="text-light mb-2 ps-3" style="font-size: 0.82rem;">
+      {% for step in f.reproduction_recipe.steps %}
+      <li>{{ step }}</li>
+      {% endfor %}
+    </ol>
+    <div class="p-2 bg-black rounded" style="font-size: 0.8rem; border-left: 3px solid var(--accent-cyan);">
+      <strong class="text-info">Suggested Debugging Direction:</strong> {{ f.suggested_debugging }}
+    </div>
+  </div>
+
+  <!-- Evidence Viewer -->
+  <div>
+    <h6 class="text-light mb-2" style="font-size: 0.85rem;"><i data-lucide="file-text" class="me-1" style="width: 14px; height: 14px;"></i> Diagnostic Evidence</h6>
+    {% for ev in f.evidence %}
+    <div class="mb-2">
+      <div class="text-muted mb-1" style="font-size: 0.72rem;">{{ ev.type }} — {{ ev.timestamp }}</div>
+      <div class="log-box">{{ ev.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="lab-card text-center py-5 text-muted">
+  <i data-lucide="check-circle" class="text-success mb-2" style="width: 48px; height: 48px;"></i>
+  <p class="m-0">No failures detected under this test execution!</p>
+</div>
+{% endfor %}
+
+{% endblock %}

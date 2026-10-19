@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+{% block page_title %}Environment & System Configuration{% endblock %}
+{% block page_subtitle %}Manage Neo4j AuraDB connections, ADB integration paths, and diagnostic state{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Neo4j AuraDB Configuration -->
+  <div class="col-lg-6">
+    <div class="lab-card h-100">
+      <div class="card-title">
+        <span>Neo4j AuraDB Configuration</span>
+        <span class="badge {% if neo4j_status.connected %}bg-success{% else %}bg-warning text-dark{% endif %}">
+          {% if neo4j_status.connected %}Active & Connected{% else %}Disconnected / Demo Mode{% endif %}
+        </span>
+      </div>
+
+      <p class="text-muted" style="font-size: 0.82rem;">
+        Neo4j AuraDB provides cloud-hosted graph traversal. To connect a live instance, enter credentials below or set them in your local <code>.env</code> file.
+      </p>
+
+      {% if neo4j_status.error %}
+      <div class="alert alert-danger py-2" style="font-size: 0.78rem;">
+        <strong>Connection Notice:</strong> {{ neo4j_status.error }}
+      </div>
+      {% endif %}
+
+      <form action="{{ url_for('update_settings') }}" method="POST">
+        <input type="hidden" name="setting_type" value="neo4j">
+        <div class="mb-3">
+          <label class="form-label">NEO4J_URI</label>
+          <input type="text" name="neo4j_uri" class="form-control font-monospace" placeholder="neo4j+s://xxxx.databases.neo4j.io" value="{{ neo4j_status.uri if neo4j_status.connected else '' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">NEO4J_USERNAME</label>
+          <input type="text" name="neo4j_username" class="form-control" placeholder="neo4j" value="neo4j">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">NEO4J_PASSWORD</label>
+          <input type="password" name="neo4j_password" class="form-control" placeholder="AuraDB Password">
+        </div>
+        <button type="submit" class="btn btn-primary-gradient px-3 py-2">Test & Save Neo4j Credentials</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Android Debug Bridge (ADB) Status -->
+  <div class="col-lg-6">
+    <div class="lab-card h-100">
+      <div class="card-title">
+        <span>Android Testing Environment (ADB)</span>
+        <span class="badge {% if adb_installed %}bg-success{% else %}bg-secondary{% endif %}">
+          {% if adb_installed %}Available{% else %}Missing from PATH{% endif %}
+        </span>
+      </div>
+
+      <div class="mb-3" style="font-size: 0.85rem;">
+        <div class="text-muted mb-1">ADB Binary Status:</div>
+        <div class="p-2 bg-dark rounded border border-secondary font-monospace" style="font-size: 0.8rem;">
+          {{ adb_version or "adb binary not located on system PATH" }}
+        </div>
+      </div>
+
+      <div class="mb-3" style="font-size: 0.82rem;">
+        <strong class="text-light">Security & Execution Policy:</strong>
+        <p class="text-muted mt-1">
+          CheapPhone Lab enforces controlled, argument-list execution. Host-level arbitrary shell execution is disallowed. Uploaded APKs are deployed exclusively to the designated Android emulator and never executed on the server operating system.
+        </p>
+      </div>
+
+      <div class="p-3 bg-dark rounded border border-info" style="font-size: 0.8rem;">
+        <strong class="text-info">Hackathon Demo Mode:</strong>
+        <p class="m-0 text-muted mt-1">
+          When physical Android devices or emulators are not available, the deterministic simulation engine generates reproducible mobile failure data across all test categories.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

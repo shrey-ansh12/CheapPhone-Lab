@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Graph Explorer{% endblock %}
+{% block page_title %}Neo4j Graph Explorer{% endblock %}
+{% block page_subtitle %}Discover interconnected failure patterns, shared device conditions, and affected application features{% endblock %}
+
+{% block content %}
+<!-- Neo4j Status Bar / Architecture Value Prop -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="alert alert-dark-info m-0">
+      <h6 class="alert-heading fw-bold mb-1"><i data-lucide="share-2" class="me-1"></i> Why Neo4j Graph Database?</h6>
+      <p class="m-0" style="font-size: 0.82rem;">
+        In budget phone testing, failures rarely happen in isolation. A crash on the <em>Catalog Screen</em> under <em>2GB RAM</em> shares the identical root-cause memory pressure pattern with an ANR on <em>App Startup</em>. Neo4j allows developers to traverse multi-hop relationships across <code>Application &rarr; AppFeature &larr; Failure &larr; TestRun &rarr; Condition &rarr; UserSegment</code>, revealing systemic mobile bottlenecks that relational tables obscure.
+      </p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="lab-card m-0 h-100 d-flex flex-column justify-content-center">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <strong style="font-size: 0.85rem;">Neo4j AuraDB State:</strong>
+        <span class="badge {% if neo4j_status.connected %}bg-success{% else %}bg-warning text-dark{% endif %}">
+          {% if neo4j_status.connected %}Connected{% else %}Local Demo Store{% endif %}
+        </span>
+      </div>
+      <div class="text-muted" style="font-size: 0.75rem;">
+        Endpoint: <code>{{ neo4j_status.uri }}</code>
+      </div>
+      {% if not neo4j_status.connected %}
+      <div class="mt-2 text-warning" style="font-size: 0.72rem;">
+        Showing deterministic graph topology from local demo storage. Add credentials in <code>.env</code> to connect live AuraDB instance.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Graph Visualization Canvas -->
+<div class="lab-card mb-4">
+  <div class="card-title">
+    <span>Interactive Connected Graph Explorer</span>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-light py-0" onclick="resetGraphView()">
+        <i data-lucide="rotate-ccw" class="me-1" style="width: 12px; height: 12px;"></i> Fit Graph
+      </button>
+    </div>
+  </div>
+  <div id="network-graph"></div>
+  <div class="d-flex flex-wrap gap-3 mt-3 pt-2 border-top border-secondary" style="font-size: 0.75rem;">
+    <div><span class="badge" style="background-color: #3b82f6;">Application</span> Target App</div>
+    <div><span class="badge" style="background-color: #ef4444;">Failure</span> Bug / Error</div>
+    <div><span class="badge" style="background-color: #06b6d4;">AppFeature</span> UI / Module</div>
+    <div><span class="badge" style="background-color: #f59e0b;">Condition</span> Telecom / Storage</div>
+    <div><span class="badge" style="background-color: #10b981;">UserSegment</span> Population</div>
+    <div><span class="badge" style="background-color: #8b5cf6;">DeviceProfile</span> Hardware</div>
+    <div><span class="badge" style="background-color: #64748b;">Evidence / Recipe</span> Diagnosis</div>
+  </div>
+</div>
+
+<!-- Cypher Query Exploration Table -->
+<div class="lab-card">
+  <div class="card-title">
+    <span>Pattern Matching: Failures Sharing Identical Environmental Stress Factors</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-dark-custom">
+      <thead>
+        <tr>
+          <th>Stress Condition</th>
+          <th>Correlated Failures</th>
+          <th>Affected Application Feature</th>
+          <th>Severity</th>
+          <th>Discovered In</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rel in condition_correlations %}
+        <tr>
+          <td class="fw-bold text-warning">{{ rel.condition }}</td>
+          <td class="text-light">{{ rel.failure_title }}</td>
+          <td><span class="badge bg-secondary">{{ rel.feature }}</span></td>
+          <td><span class="badge badge-{{ rel.severity|lower }}">{{ rel.severity }}</span></td>
+          <td><code>{{ rel.run_id }}</code></td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" class="text-center text-muted py-3">No correlated patterns recorded yet. Execute simulation runs to populate the graph database.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let network = null;
+  const graphData = {{ graph_data|tojson }};
+
+  function initGraph() {
+    const container = document.getElementById('network-graph');
+    
+    // Color mapping by node group
+    const colorMap = {
+      'Application': '#3b82f6',
+      'Failure': '#ef4444',
+      'AppFeature': '#06b6d4',
+      'Condition': '#f59e0b',
+      'UserSegment': '#10b981',
+      'DeviceProfile': '#8b5cf6',
+      'Evidence': '#64748b',
+      'ReproductionRecipe': '#ec4899',
+      'TestRun': '#6366f1'
+    };
+
+    const formattedNodes = (graphData.nodes || []).map(n => {
+      const color = colorMap[n.group] || '#94a3b8';
+      return {
+        id: n.id,
+        label: n.label,
+        title: n.title,
+        color: {
+          background: color,
+          border: '#ffffff',
+          highlight: { background: '#0284c7', border: '#0369a1' }
+        },
+        font: { color: '#ffffff', size: 11, face: 'monospace' },
+        shape: 'box',
+        margin: 8,
+        shadow: { enabled: true, color: 'rgba(0,0,0,0.12)', size: 4 }
+      };
+    });
+
+    const formattedEdges = (graphData.edges || []).map(e => ({
+      from: e.from,
+      to: e.to,
+      label: e.label,
+      arrows: 'to',
+      color: { color: '#94a3b8', highlight: '#0284c7' },
+      font: { color: '#475569', size: 9, align: 'middle' },
+      smooth: { type: 'continuous' }
+    }));
+
+    const data = {
+      nodes: new vis.DataSet(formattedNodes),
+      edges: new vis.DataSet(formattedEdges)
+    };
+
+    const options = {
+      physics: {
+        stabilization: true,
+        barnesHut: { gravitationalConstant: -3500, springLength: 95 }
+      },
+      interaction: { hover: true, tooltipDelay: 150 }
+    };
+
+    network = new vis.Network(container, data, options);
+  }
+
+  function resetGraphView() {
+    if (network) network.fit();
+  }
+
+  document.addEventListener('DOMContentLoaded', initGraph);
+</script>
+{% endblock %}
