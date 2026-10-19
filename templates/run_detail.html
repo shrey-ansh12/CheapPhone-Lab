@@ -67,9 +67,9 @@
   <div class="row g-3">
     {% for k, v in run.conditions_summary.items() %}
     <div class="col-md-3">
-      <div class="p-2 border border-secondary rounded" style="background: #0d1527;">
-        <div class="text-muted" style="font-size: 0.72rem; text-transform: uppercase;">{{ k.replace('_', ' ') }}</div>
-        <div class="text-info fw-medium" style="font-size: 0.85rem;">{{ v }}</div>
+      <div class="p-2 border border-secondary rounded" style="background: #ffffff;">
+        <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">{{ k.replace('_', ' ') }}</div>
+        <div class="text-primary fw-semibold" style="font-size: 0.88rem;">{{ v }}</div>
       </div>
     </div>
     {% endfor %}
@@ -77,7 +77,7 @@
 </div>
 
 <!-- Failures and Reproduction Recipes -->
-<h4 class="text-light mb-3">Discovered Failures ({{ run.failure_count }})</h4>
+<h4 class="text-main fw-bold mb-3">Discovered Failures ({{ run.failure_count }})</h4>
 
 {% for f in run.failures %}
 <div class="lab-card mb-4">
@@ -85,7 +85,7 @@
     <div>
       <span class="badge badge-{{ f.severity|lower }} me-2">{{ f.severity }}</span>
       <span class="badge bg-secondary me-2">{{ f.category }}</span>
-      <strong class="text-light fs-5">{{ f.title }}</strong>
+      <strong class="text-main fs-5">{{ f.title }}</strong>
     </div>
     <div>
       <a href="{{ url_for('graph_explorer_query', failure_id=f.id) }}" class="btn btn-sm btn-outline-cyan">
@@ -98,34 +98,34 @@
 
   <div class="row g-3 mb-3">
     <div class="col-md-6">
-      <div class="p-2 bg-dark rounded border border-secondary">
-        <div class="text-muted" style="font-size: 0.75rem;">EXPECTED BEHAVIOR</div>
-        <div class="text-success" style="font-size: 0.85rem;">{{ f.expected_behavior }}</div>
+      <div class="p-3 bg-light rounded border border-secondary">
+        <div class="text-muted fw-bold" style="font-size: 0.75rem;">EXPECTED BEHAVIOR</div>
+        <div class="text-success fw-medium" style="font-size: 0.85rem;">{{ f.expected_behavior }}</div>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="p-2 bg-dark rounded border border-secondary">
-        <div class="text-muted" style="font-size: 0.75rem;">OBSERVED BEHAVIOR</div>
-        <div class="text-danger" style="font-size: 0.85rem;">{{ f.observed_behavior }}</div>
+      <div class="p-3 bg-light rounded border border-secondary">
+        <div class="text-muted fw-bold" style="font-size: 0.75rem;">OBSERVED BEHAVIOR</div>
+        <div class="text-danger fw-medium" style="font-size: 0.85rem;">{{ f.observed_behavior }}</div>
       </div>
     </div>
   </div>
 
   <!-- Reproduction Recipe Card -->
-  <div class="p-3 rounded mb-3" style="background-color: #0b1120; border: 1px solid #1f2b45;">
-    <h6 class="text-info mb-2"><i data-lucide="clipboard-list" class="me-1" style="width: 16px; height: 16px;"></i> Reproduction Recipe</h6>
-    <div class="row g-2 mb-2" style="font-size: 0.8rem;">
-      <div class="col-md-6 text-muted"><strong>Preconditions:</strong> {{ f.reproduction_recipe.preconditions }}</div>
-      <div class="col-md-6 text-muted"><strong>Network/Storage:</strong> {{ f.reproduction_recipe.network_storage }}</div>
+  <div class="p-3 rounded mb-3" style="background-color: #f8fafc; border: 1px solid #cbd5e1;">
+    <h6 class="text-primary fw-bold mb-2"><i data-lucide="clipboard-list" class="me-1" style="width: 16px; height: 16px;"></i> Reproduction Recipe</h6>
+    <div class="row g-2 mb-2" style="font-size: 0.85rem; color: #334155;">
+      <div class="col-md-6"><strong>Preconditions:</strong> {{ f.reproduction_recipe.preconditions }}</div>
+      <div class="col-md-6"><strong>Network/Storage:</strong> {{ f.reproduction_recipe.network_storage }}</div>
     </div>
-    <div class="fw-bold text-light mb-1" style="font-size: 0.8rem;">Step-by-Step Instructions:</div>
-    <ol class="text-light mb-2 ps-3" style="font-size: 0.82rem;">
+    <div class="fw-bold text-main mb-1" style="font-size: 0.85rem;">Step-by-Step Instructions:</div>
+    <ol class="text-main mb-2 ps-3" style="font-size: 0.85rem; color: #1e293b;">
       {% for step in f.reproduction_recipe.steps %}
-      <li>{{ step }}</li>
+      <li class="mb-1">{{ step }}</li>
       {% endfor %}
     </ol>
-    <div class="p-2 bg-black rounded" style="font-size: 0.8rem; border-left: 3px solid var(--accent-cyan);">
-      <strong class="text-info">Suggested Debugging Direction:</strong> {{ f.suggested_debugging }}
+    <div class="p-2 rounded" style="background-color: #f1f5f9; font-size: 0.82rem; border-left: 4px solid var(--accent-blue); color: #0f172a;">
+      <strong class="text-primary">Suggested Debugging Direction:</strong> {{ f.suggested_debugging }}
     </div>
   </div>
 

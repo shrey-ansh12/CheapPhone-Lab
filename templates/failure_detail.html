@@ -23,37 +23,37 @@
     </a>
   </div>
 
-  <p class="fs-6 text-light">{{ failure.description }}</p>
+  <p class="fs-6 text-main" style="color: #1e293b;">{{ failure.description }}</p>
 
   <div class="row g-3 my-2">
     <div class="col-md-6">
-      <div class="p-3 bg-dark rounded border border-secondary">
+      <div class="p-3 bg-light rounded border border-secondary">
         <strong class="text-muted d-block mb-1" style="font-size: 0.75rem;">EXPECTED BEHAVIOR</strong>
-        <span class="text-success">{{ failure.expected_behavior }}</span>
+        <span class="text-success fw-medium">{{ failure.expected_behavior }}</span>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="p-3 bg-dark rounded border border-secondary">
+      <div class="p-3 bg-light rounded border border-secondary">
         <strong class="text-muted d-block mb-1" style="font-size: 0.75rem;">OBSERVED BEHAVIOR</strong>
-        <span class="text-danger">{{ failure.observed_behavior }}</span>
+        <span class="text-danger fw-medium">{{ failure.observed_behavior }}</span>
       </div>
     </div>
   </div>
 
-  <div class="p-3 bg-dark rounded border border-info my-3">
-    <strong class="text-info d-block mb-1" style="font-size: 0.75rem;">SUGGESTED DEBUGGING DIRECTION</strong>
-    <span class="text-light">{{ failure.suggested_debugging }}</span>
+  <div class="p-3 bg-light rounded border border-info my-3">
+    <strong class="text-primary d-block mb-1" style="font-size: 0.75rem;">SUGGESTED DEBUGGING DIRECTION</strong>
+    <span class="text-main" style="color: #0f172a;">{{ failure.suggested_debugging }}</span>
   </div>
 
   <!-- Reproduction Recipe -->
-  <div class="p-3 rounded mb-3" style="background-color: #0b1120; border: 1px solid #1f2b45;">
-    <h5 class="text-cyan mb-3"><i data-lucide="clipboard-list" class="me-1"></i> Exact Reproduction Recipe</h5>
-    <div class="row g-2 mb-3 text-muted" style="font-size: 0.85rem;">
+  <div class="p-3 rounded mb-3" style="background-color: #f8fafc; border: 1px solid #cbd5e1;">
+    <h5 class="text-primary fw-bold mb-3"><i data-lucide="clipboard-list" class="me-1"></i> Exact Reproduction Recipe</h5>
+    <div class="row g-2 mb-3 text-muted" style="font-size: 0.85rem; color: #334155;">
       <div class="col-md-6"><strong>Preconditions:</strong> {{ failure.reproduction_recipe.preconditions }}</div>
       <div class="col-md-6"><strong>Network & Storage:</strong> {{ failure.reproduction_recipe.network_storage }}</div>
     </div>
-    <h6 class="text-light">Steps to Reproduce:</h6>
-    <ol class="text-light ps-3">
+    <h6 class="text-main fw-bold">Steps to Reproduce:</h6>
+    <ol class="text-main ps-3" style="color: #1e293b;">
       {% for step in failure.reproduction_recipe.steps %}
       <li class="mb-1">{{ step }}</li>
       {% endfor %}
